@@ -31,7 +31,6 @@ server.post("/login",  async (req, res)=>{
     let {user, password, ip} = req.body;
     let objectToSave = {user:user,ip:ip} 
     let data = await leerArchivo(path);
-    console.log(data,"a")
     data.push(objectToSave)
     escribirArchivo(path,data);
     res.status(200).send("recibido")
@@ -49,7 +48,7 @@ server.post('/indexar', async (req, res) => {
     }
     let index = data.findIndex(obj => obj.ip==ip);
     if(index == -1){
-        res.send("no encontre el peer")
+        res.status(400).send("no encontre el peer")
         return;
     }
     let json = data[index]
@@ -59,10 +58,28 @@ server.post('/indexar', async (req, res) => {
     res.send("archivos guardados");
 })
 
-server.get("/buscar", (req, res) => {
-    
+server.get("/buscar", async (req, res) => {
+    let {archivo} = req.headers
+    let data = await leerArchivo(path);
+    let disponibles = []
+    data.forEach(element => {
+        let index= element.archivos ? element.archivos.findIndex(obj => obj==archivo): -1
+        if(index != -1){
+            disponibles.push(element)
+        }
+    });
+    console.log(disponibles, "el archivo esta en estos peers")
+
 })
 
+server.post("/logout", async (req, res) => {
+    let {ip} = req.body;
+    let data = await leerArchivo(path);
+    let index = data.findIndex(obj => obj.ip == ip);
+    data.splice(index,1)
+    escribirArchivo(path,data);
+    res.status(200).send("sesion terminada")
+})
 
 server.listen(4000, function () {
     console.log('ya estoy corriendo mi bro en el 4000')
