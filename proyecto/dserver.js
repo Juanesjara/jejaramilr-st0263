@@ -1,15 +1,8 @@
 const express = require("express")
 const server = express()
 const {writeFile, readFile, readFileSync} = require('fs').promises; 
-const { parse } = require("path");
 server.use(express.json());
 const path = "./directory.json";
-
-
-
-server.get("/prueba",function (req, res) {
-    res.status(200).send("informacion que vamos a enviar")
-})
 
 async function leerArchivo(path){
     return readFile(path, 'utf8').then((data) => data ? JSON.parse(data) : [])
@@ -32,8 +25,9 @@ server.post("/login",  async (req, res)=>{
     let objectToSave = {user:user,ip:ip} 
     let data = await leerArchivo(path);
     data.push(objectToSave)
+    if(data)
     escribirArchivo(path,data);
-    res.status(200).send("recibido")
+    res.status(200).send("usuario logeado")
 });
 
 
@@ -42,12 +36,12 @@ server.post('/indexar', async (req, res) => {
     let data;
     try {
         data = await leerArchivo(path);
-        console.log(data, "envio del archivo")
     } catch (error) {
         console.error('Error al leer el archivo:', error);
     }
     let index = data.findIndex(obj => obj.ip==ip);
     if(index == -1){
+        console.log("no encontre")
         res.status(400).send("no encontre el peer")
         return;
     }
@@ -55,11 +49,13 @@ server.post('/indexar', async (req, res) => {
     json.archivos = archivos;
     console.log(data, "array nuevo")
     escribirArchivo(path,data)
+    console.log(data, "array")
     res.send("archivos guardados");
 })
 
 server.get("/buscar", async (req, res) => {
     let {archivo} = req.headers
+    console.log("lo que busco", archivo)
     let data = await leerArchivo(path);
     let disponibles = []
     data.forEach(element => {
@@ -69,7 +65,7 @@ server.get("/buscar", async (req, res) => {
         }
     });
     console.log(disponibles, "el archivo esta en estos peers")
-
+    res.status(200).send(disponibles)
 })
 
 server.post("/logout", async (req, res) => {
