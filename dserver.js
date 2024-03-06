@@ -55,7 +55,6 @@ server.post('/indexar', async (req, res) => {
 
 server.get("/buscar", async (req, res) => {
     let {archivo} = req.headers
-    console.log("lo que busco", archivo)
     let data = await leerArchivo(path);
     let disponibles = []
     data.forEach(element => {
@@ -64,8 +63,12 @@ server.get("/buscar", async (req, res) => {
             disponibles.push(element)
         }
     });
-    console.log(disponibles, "el archivo esta en estos peers")
-    res.status(200).send(disponibles)
+    if(disponibles.length > 0){
+        console.log(disponibles, "el archivo esta en estos peers")
+        res.status(200).send(disponibles)
+    }else{
+        res.status(404).send("no encontre ningun archivo")
+    }
 })
 
 server.post("/logout", async (req, res) => {

@@ -5,8 +5,8 @@ package file_service;
 
 
 message infoFile {
-    string nombe = 1;
-    string link = 2;
+    string nombre = 1;
+   
 }
 
 message GetFileRequest {
